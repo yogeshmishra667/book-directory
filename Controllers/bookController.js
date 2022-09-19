@@ -1,5 +1,5 @@
 const Book = require('../Model/booksModel');
-//User Route
+
 exports.getAllBooks = async (req, res) => {
   try {
     const book = await Book.find();

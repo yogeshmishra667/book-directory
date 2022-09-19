@@ -7,7 +7,7 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: true,
       maxlength: [
-        40,
+        50,
         'A book title must have less or equal then 40 characters',
       ],
       minlength: [
@@ -36,8 +36,8 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A book must have a format'],
       enum: {
-        values: ['Ebooks', 'PDF', 'Kindly'],
-        message: 'format is either: ebooks, pdf, kindly',
+        values: ['Ebooks', 'PDF', 'Kindly', 'EPUB'],
+        message: 'format is either: ebooks, pdf, kindly, EPUB',
       },
     },
     ratingsAverage: {
@@ -76,8 +76,16 @@ const bookSchema = new mongoose.Schema(
       type: String,
       required: [true, 'A book must have a genre'],
       enum: {
-        values: ['Quest', 'adventure', 'fantasy'],
-        message: 'genre is either: Quest, adventure, fantasy',
+        values: [
+          'Quest',
+          'adventure',
+          'fantasy',
+          'Biography',
+          'Dystopia',
+          'Non-fiction',
+        ],
+        message:
+          'genre is either: Quest, adventure, fantasy, Biography, Dystopia, Non-fiction',
       },
     },
   }
