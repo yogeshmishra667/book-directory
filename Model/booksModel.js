@@ -3,27 +3,41 @@ const mongoose = require('mongoose');
 //mongoose schema and schema-type
 const bookSchema = new mongoose.Schema(
   {
-    name: {
+    title: {
       type: String,
       required: true,
-      maxlength: [40, 'A tour name must have less or equal then 40 characters'],
-      minlength: [10, 'A tour name must have more or equal then 10 characters'],
+      maxlength: [
+        40,
+        'A book title must have less or equal then 40 characters',
+      ],
+      minlength: [
+        10,
+        'A book title must have more or equal then 10 characters',
+      ],
     },
     slug: String,
-    duration: {
-      type: Number,
-      required: [true, 'A tour must have a duration'],
-    },
-    maxGroupSize: {
-      type: Number,
-      required: [true, 'A tour must have a group size'],
-    },
-    difficulty: {
+    Author: {
       type: String,
-      required: [true, 'A tour must have a difficulty'],
+      required: [true, 'A book must have a author'],
+    },
+    ISBN: {
+      type: Number,
+      required: [true, 'A book must have a ISBN'],
+    },
+    publisher: {
+      type: String,
+      required: [true, 'A book must have a publisher'],
+    },
+    publishedDate: {
+      type: Date,
+      required: [true, 'A book must have a publishedDate'],
+    },
+    format: {
+      type: String,
+      required: [true, 'A book must have a format'],
       enum: {
-        values: ['easy', 'medium', 'difficult'],
-        message: 'Difficulty is either: easy, medium, difficult',
+        values: ['Ebooks', 'PDF', 'Kindly'],
+        message: 'format is either: ebooks, pdf, kindly',
       },
     },
     ratingsAverage: {
@@ -48,30 +62,29 @@ const bookSchema = new mongoose.Schema(
       trim: true,
       required: [true, 'A tour must have a description'],
     },
-    description: {
-      type: String,
-      trim: true,
+    pageCount: {
+      type: Number,
     },
-    imageCover: {
+    bookCover: {
       type: String,
       required: [true, 'A tour must have a cover image'],
     },
-    images: [String], //use for multiple images
-    createdAt: {
-      type: Date,
-      default: Date.now(),
-      select: false, //for hide from output
+    language: {
+      type: String,
     },
-    startDates: [Date], //use for multiple dates
-    secretTour: {
-      type: Boolean,
-      default: false,
+    genre: {
+      type: String,
+      required: [true, 'A book must have a genre'],
+      enum: {
+        values: ['Quest', 'adventure', 'fantasy'],
+        message: 'genre is either: Quest, adventure, fantasy',
+      },
     },
-  },
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   }
+  // {
+  //   toJSON: { virtuals: true },
+  //   toObject: { virtuals: true },
+  // }
 );
 
 //mongoose model of the schema
