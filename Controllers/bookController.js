@@ -1,12 +1,21 @@
 const Book = require('../Model/booksModel');
+const APIFeatures = require('../utils/apiFeatures');
 
 exports.getAllBooks = async (req, res) => {
   try {
-    const book = await Book.find();
+    //Execute the Query
+    const features = new APIFeatures(Book.find(), req.query)
+      .filter()
+      .sort()
+      .limitFields()
+      .paginate();
+    const books = await features.query;
+    // const book = await Book.find();
     res.status(200).json({
+      result: books.length,
       status: 'success',
       data: {
-        book,
+        book: books,
       },
     });
   } catch (error) {
