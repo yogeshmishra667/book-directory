@@ -1,6 +1,27 @@
 const Book = require('../Model/booksModel');
 const APIFeatures = require('../utils/apiFeatures');
 
+//Additional features
+exports.getTopFive = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'title,ISBN,price,summary';
+  next();
+};
+//2)
+exports.getTopFiveAuthor = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'Author,publisher,publishedDate';
+  next();
+};
+exports.getLatestBook = (req, res, next) => {
+  req.query.limit = '2';
+  req.query.sort = '-publishedDate';
+  req.query.fields = 'title,Author,publisher,publishedDate';
+  next();
+};
+
 exports.getAllBooks = async (req, res) => {
   try {
     //Execute the Query
@@ -92,6 +113,38 @@ exports.deleteBooks = async (req, res) => {
     res.send({
       status: 'fail',
       Error: error,
+    });
+  }
+};
+
+//aggregation pipeline
+exports.getBookStats = async (req, res) => {
+  try {
+    const stats = await Book.aggregate([
+      {
+        $match: { ratingsAverage: { $gte: 4.5 } },
+      },
+      {
+        $group: {
+          _id: '$format',
+          numBooks: { $sum: 1 },
+          numRatings: { $sum: '$ratingsQuantity' },
+          avgRating: { $avg: '$ratingsAverage' },
+          avgPrice: { $avg: '$price' },
+          minPrice: { $min: '$price' },
+          maxPrice: { $max: '$price' },
+        },
+      },
+    ]);
+
+    res.status(201).send({
+      data: {
+        stats,
+      },
+    });
+  } catch (error) {
+    res.status(404).send({
+      message: 'aggregation not working properly',
     });
   }
 };

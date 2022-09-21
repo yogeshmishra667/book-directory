@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-//const slugify = require('slugify');
+const slugify = require('slugify');
 //mongoose schema and schema-type
 const bookSchema = new mongoose.Schema(
   {
@@ -94,7 +94,12 @@ const bookSchema = new mongoose.Schema(
   //   toObject: { virtuals: true },
   // }
 );
-
+// DOCUMENT MIDDLEWARE: runs before .save() and .create()
+bookSchema.pre('save', function (next) {
+  console.log(this.title);
+  this.slug = slugify(this.title, { lower: true });
+  next();
+});
 //mongoose model of the schema
 const Book = mongoose.model('Book', bookSchema);
 
