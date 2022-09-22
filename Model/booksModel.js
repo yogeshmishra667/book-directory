@@ -52,7 +52,11 @@ const bookSchema = new mongoose.Schema(
     },
     price: {
       type: Number,
-      required: [true, 'A tour must have a price'],
+      required: [true, 'A books must have a price'],
+    },
+    soldCopies: {
+      type: Number,
+      required: [true, 'A books must have a soldCopies'],
     },
     priceDiscount: {
       type: Number,
@@ -60,21 +64,21 @@ const bookSchema = new mongoose.Schema(
     summary: {
       type: String,
       trim: true,
-      required: [true, 'A tour must have a description'],
+      required: [true, 'A books must have a description'],
     },
     pageCount: {
       type: Number,
     },
     bookCover: {
       type: String,
-      required: [true, 'A tour must have a cover image'],
+      required: [true, 'A books must have a cover image'],
     },
     language: {
       type: String,
     },
     genre: {
       type: String,
-      required: [true, 'A book must have a genre'],
+      required: [true, 'A books must have a genre'],
       enum: {
         values: [
           'Quest',

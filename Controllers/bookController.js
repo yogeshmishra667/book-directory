@@ -21,6 +21,30 @@ exports.getLatestBook = (req, res, next) => {
   req.query.fields = 'title,Author,publisher,publishedDate';
   next();
 };
+exports.bestSeller = (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-soldCopies';
+  req.query.fields = 'title,Author,publisher, soldCopies, price';
+  next();
+};
+exports.searchBook = async (req, res) => {
+  try {
+    const searchedField = req.query.title;
+    const book = await Book.find({
+      title: { $regex: searchedField, $options: '$i' },
+    });
+    res.status(201).send({
+      data: {
+        book,
+      },
+    });
+  } catch (error) {
+    res.status(404).send({
+      message: 'the search term not found in database',
+      Error: error,
+    });
+  }
+};
 
 exports.getAllBooks = async (req, res) => {
   try {

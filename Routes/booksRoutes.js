@@ -19,6 +19,11 @@ Router.route('/latest-book').get(
   bookController.getLatestBook,
   bookController.getAllBooks
 );
+Router.route('/bestSeller').get(
+  bookController.bestSeller,
+  bookController.getAllBooks
+);
+Router.route('/searchBook').get(bookController.searchBook);
 
 Router.route('/')
   .get(bookController.getAllBooks)
