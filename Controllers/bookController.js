@@ -33,6 +33,7 @@ exports.searchBook = async (req, res) => {
     const book = await Book.find({
       title: { $regex: searchedField, $options: '$i' },
     });
+
     res.status(201).send({
       data: {
         book,
