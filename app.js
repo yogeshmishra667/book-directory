@@ -1,7 +1,9 @@
 const express = require('express');
 const morgan = require('morgan');
+const globalErrorHandler = require('./Controllers/errorController');
 const booksRouter = require('./Routes/booksRoutes');
 const userRouter = require('./Routes/userRoutes');
+const AppError = require('./utils/appError');
 
 const app = express();
 
@@ -23,4 +25,9 @@ app.use((req, res, next) => {
 app.use('/api/v1/books', booksRouter);
 app.use('/api/v1/users', userRouter);
 
+//for routes not define
+app.all('*', (req, res, next) =>
+  next(new AppError(`can't find ${req.originalUrl} on server`, 404))
+);
+app.use(globalErrorHandler);
 module.exports = app;
