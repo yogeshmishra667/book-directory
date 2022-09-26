@@ -1,5 +1,6 @@
 const Book = require('../Model/booksModel');
 const APIFeatures = require('../utils/apiFeatures');
+const catchAsync = require('../utils/catchAsync');
 
 //Additional features
 exports.getTopFive = (req, res, next) => {
@@ -27,149 +28,101 @@ exports.bestSeller = (req, res, next) => {
   req.query.fields = 'title,Author,publisher, soldCopies, price';
   next();
 };
-exports.searchBook = async (req, res) => {
-  try {
-    const searchedField = req.query.title;
-    const book = await Book.find({
-      title: { $regex: searchedField, $options: '$i' },
-    });
+exports.searchBook = catchAsync(async (req, res) => {
+  const searchedField = req.query.title;
+  const book = await Book.find({
+    title: { $regex: searchedField, $options: '$i' },
+  });
 
-    res.status(201).send({
-      data: {
-        book,
-      },
-    });
-  } catch (error) {
-    res.status(404).send({
-      message: 'the search term not found in database',
-      Error: error,
-    });
-  }
-};
+  res.status(201).send({
+    data: {
+      book,
+    },
+  });
+});
 
-exports.getAllBooks = async (req, res) => {
-  try {
-    //Execute the Query
-    const features = new APIFeatures(Book.find(), req.query)
-      .filter()
-      .sort()
-      .limitFields()
-      .paginate();
-    const books = await features.query;
-    // const book = await Book.find();
-    res.status(200).json({
-      result: books.length,
-      status: 'success',
-      data: {
-        book: books,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      Error: error,
-    });
-  }
-};
+exports.getAllBooks = catchAsync(async (req, res) => {
+  //Execute the Query
+  const features = new APIFeatures(Book.find(), req.query)
+    .filter()
+    .sort()
+    .limitFields()
+    .paginate();
+  const books = await features.query;
+  // const book = await Book.find();
+  res.status(200).json({
+    result: books.length,
+    status: 'success',
+    data: {
+      book: books,
+    },
+  });
+});
 
-exports.createBooks = async (req, res) => {
-  try {
-    const newBook = await Book.create(req.body);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        book: newBook,
-      },
-    });
-  } catch (error) {
-    res.status(404).json({
-      status: 'fail',
-      Error: error,
-    });
-  }
-};
+exports.createBooks = catchAsync(async (req, res) => {
+  const newBook = await Book.create(req.body);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      book: newBook,
+    },
+  });
+});
 
-exports.getBooks = async (req, res) => {
-  try {
-    const book = await Book.findById(req.params.id);
-    res.status(200).json({
-      status: 'success',
-      data: {
-        book,
-      },
-    });
-  } catch (error) {
-    res.status(404).send({
-      status: 'fail',
-      Error: error,
-    });
-  }
-};
+exports.getBooks = catchAsync(async (req, res) => {
+  const book = await Book.findById(req.params.id);
+  res.status(200).json({
+    status: 'success',
+    data: {
+      book,
+    },
+  });
+});
 
-exports.updateBooks = async (req, res) => {
-  try {
-    const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
-    res.status(200).json({
-      status: 'success',
-      data: {
-        book,
-      },
-    });
-  } catch (error) {
-    res.status(400).send({
-      status: 'fail',
-      Error: error,
-    });
-  }
-};
+exports.updateBooks = catchAsync(async (req, res) => {
+  const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+  });
+  res.status(200).json({
+    status: 'success',
+    data: {
+      book,
+    },
+  });
+});
 
-exports.deleteBooks = async (req, res) => {
-  try {
-    const book = await Book.findByIdAndDelete(req.params.id);
-    res.json({
-      status: 'the book is deleted successfully',
-      data: {
-        book,
-      },
-    });
-  } catch (error) {
-    res.send({
-      status: 'fail',
-      Error: error,
-    });
-  }
-};
+exports.deleteBooks = catchAsync(async (req, res) => {
+  const book = await Book.findByIdAndDelete(req.params.id);
+  res.json({
+    status: 'the book is deleted successfully',
+    data: {
+      book,
+    },
+  });
+});
 
 //aggregation pipeline
-exports.getBookStats = async (req, res) => {
-  try {
-    const stats = await Book.aggregate([
-      {
-        $match: { ratingsAverage: { $gte: 4.5 } },
+exports.getBookStats = catchAsync(async (req, res) => {
+  const stats = await Book.aggregate([
+    {
+      $match: { ratingsAverage: { $gte: 4.5 } },
+    },
+    {
+      $group: {
+        _id: '$format',
+        numBooks: { $sum: 1 },
+        numRatings: { $sum: '$ratingsQuantity' },
+        avgRating: { $avg: '$ratingsAverage' },
+        avgPrice: { $avg: '$price' },
+        minPrice: { $min: '$price' },
+        maxPrice: { $max: '$price' },
       },
-      {
-        $group: {
-          _id: '$format',
-          numBooks: { $sum: 1 },
-          numRatings: { $sum: '$ratingsQuantity' },
-          avgRating: { $avg: '$ratingsAverage' },
-          avgPrice: { $avg: '$price' },
-          minPrice: { $min: '$price' },
-          maxPrice: { $max: '$price' },
-        },
-      },
-    ]);
+    },
+  ]);
 
-    res.status(201).send({
-      data: {
-        stats,
-      },
-    });
-  } catch (error) {
-    res.status(404).send({
-      message: 'aggregation not working properly',
-    });
-  }
-};
+  res.status(201).send({
+    data: {
+      stats,
+    },
+  });
+});
