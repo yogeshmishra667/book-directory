@@ -1,6 +1,7 @@
 const Book = require('../Model/booksModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
+const AppError = require('../utils/appError');
 
 //Additional features
 exports.getTopFive = (req, res, next) => {
@@ -41,7 +42,7 @@ exports.searchBook = catchAsync(async (req, res) => {
   });
 });
 
-exports.getAllBooks = catchAsync(async (req, res) => {
+exports.getAllBooks = catchAsync(async (req, res, next) => {
   //Execute the Query
   const features = new APIFeatures(Book.find(), req.query)
     .filter()
@@ -59,7 +60,7 @@ exports.getAllBooks = catchAsync(async (req, res) => {
   });
 });
 
-exports.createBooks = catchAsync(async (req, res) => {
+exports.createBooks = catchAsync(async (req, res, next) => {
   const newBook = await Book.create(req.body);
   res.status(200).json({
     status: 'success',
@@ -69,8 +70,11 @@ exports.createBooks = catchAsync(async (req, res) => {
   });
 });
 
-exports.getBooks = catchAsync(async (req, res) => {
+exports.getBooks = catchAsync(async (req, res, next) => {
   const book = await Book.findById(req.params.id);
+  if (!book) {
+    return next(new AppError('No book found with that ID', 404));
+  }
   res.status(200).json({
     status: 'success',
     data: {
@@ -79,7 +83,7 @@ exports.getBooks = catchAsync(async (req, res) => {
   });
 });
 
-exports.updateBooks = catchAsync(async (req, res) => {
+exports.updateBooks = catchAsync(async (req, res, next) => {
   const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
   });
@@ -91,7 +95,7 @@ exports.updateBooks = catchAsync(async (req, res) => {
   });
 });
 
-exports.deleteBooks = catchAsync(async (req, res) => {
+exports.deleteBooks = catchAsync(async (req, res, next) => {
   const book = await Book.findByIdAndDelete(req.params.id);
   res.json({
     status: 'the book is deleted successfully',
@@ -102,7 +106,7 @@ exports.deleteBooks = catchAsync(async (req, res) => {
 });
 
 //aggregation pipeline
-exports.getBookStats = catchAsync(async (req, res) => {
+exports.getBookStats = catchAsync(async (req, res, next) => {
   const stats = await Book.aggregate([
     {
       $match: { ratingsAverage: { $gte: 4.5 } },
