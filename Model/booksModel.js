@@ -5,7 +5,9 @@ const bookSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, 'A tour must have a name'],
+      unique: true,
+      trim: true,
       maxlength: [
         50,
         'A book title must have less or equal then 50 characters',
@@ -100,11 +102,12 @@ const bookSchema = new mongoose.Schema(
 );
 // DOCUMENT MIDDLEWARE: runs before .save() and .create()
 bookSchema.pre('save', function (next) {
-  console.log(this.title);
+  //console.log(this.title);
   this.slug = slugify(this.title, { lower: true });
   next();
 });
 //mongoose model of the schema
 const Book = mongoose.model('Book', bookSchema);
 
+Book.createIndexes();
 module.exports = Book;

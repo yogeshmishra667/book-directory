@@ -86,6 +86,7 @@ exports.getBooks = catchAsync(async (req, res, next) => {
 exports.updateBooks = catchAsync(async (req, res, next) => {
   const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
+    runValidators: true,
   });
   res.status(200).json({
     status: 'success',
