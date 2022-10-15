@@ -1,11 +1,18 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const globalErrorHandler = require('./Controllers/errorController');
 const booksRouter = require('./Routes/booksRoutes');
 const userRouter = require('./Routes/userRoutes');
 const AppError = require('./utils/appError');
 
 const app = express();
+
+const corsOptions = {
+  origin: '*',
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
 
 // 1) middleware
 app.use(express.json());
@@ -15,6 +22,15 @@ app.use(express.static(`${__dirname}/public`));
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+app.use(cors(corsOptions)); // Use this after the variable declaration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  );
+  next();
+});
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
