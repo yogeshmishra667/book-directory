@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
-const validator = require('validator');
-const bcrypt = require('bcryptjs');
+const validator = require('validator'); //validator is a package for validation
+const bcrypt = require('bcryptjs'); //for password encryption
 //mongoose schema and schema type
 
 const userSchema = new mongoose.Schema({
@@ -10,7 +10,7 @@ const userSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    unique: true,
+    unique: true, //unique email
     lowercase: true,
     required: [true, 'please provide your email'],
     validate: [validator.isEmail, 'please provide your valid email'],
@@ -21,8 +21,9 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: [true, 'Please provide a password'],
-    unique: true,
-    minlength: 8,
+    unique: true, //we can't use unique with select:false
+    minlength: 8, //password length
+    select: false, //this is not show password in response
   },
   confirmPassword: {
     type: String,
@@ -52,6 +53,14 @@ userSchema.pre('save', async function (next) {
 
   next();
 });
+
+userSchema.methods.correctPassword = async function (
+  candidatePassword,
+  userPassword
+) {
+  return await bcrypt.compare(candidatePassword, userPassword);
+  //here basically we compare password
+};
 
 const User = mongoose.model('User', userSchema);
 

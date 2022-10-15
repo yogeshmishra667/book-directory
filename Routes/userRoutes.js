@@ -8,6 +8,7 @@ const Router = express.Router();
 //it not related to 100% to user but it follow restFul api rule
 //we can't remove user routes we also use later
 Router.route('/signup').post(authController.signup);
+Router.route('/login').post(authController.login);
 
 //users route
 Router.route('/')
