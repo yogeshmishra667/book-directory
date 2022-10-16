@@ -38,18 +38,19 @@ const userSchema = new mongoose.Schema({
       message: 'password does not matched',
     },
   },
+  passwordChangedAt: Date, //we need to know when password changed
 });
 
 userSchema.pre('save', async function (next) {
   //only run this function is password was actually modified
   if (!this.isModified('password')) return next();
 
-  //hash the password with the cost of 14
-  this.password = await bcrypt.hash(this.password, 12);
+  //hash the password with the cost of 12
+  this.password = await bcrypt.hash(this.password, 12); //we hash password with bcrypt.hash() method and we pass password and cost of 12
 
   //delete the confirmPassword value
   //we set undefined because is field set required
-  this.confirmPassword = undefined;
+  this.confirmPassword = undefined; //we don't need to save confirmPassword in database so we set undefined value
 
   next();
 });
@@ -58,8 +59,27 @@ userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
 ) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-  //here basically we compare password
+  return await bcrypt.compare(candidatePassword, userPassword); //true or false //we compare candidatePassword and userPassword and return true or false value
+};
+
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  //here we check if password changed after token issued
+  //if password changed after token issued then we need to re-login again
+  //we need to check if password changed after token issued
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      //we convert date to timestamp for compare with token timestamp (JWTTimestamp)
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    //it convert to seconds from milliseconds and we need to convert to integer because we get float value  from getTime()  method and we need to compare with JWTTimestamp which is integer  value so we need to convert to integer  value from float value using parseInt() method and we need to convert to integer value because we need to compare with JWTTimestamp which is integer value
+
+    // console.log(JWTTimestamp);
+    return JWTTimestamp < changedTimestamp; //100 < 200 //true
+  }
+  //false means not changed
+
+  return false;
 };
 
 const User = mongoose.model('User', userSchema);

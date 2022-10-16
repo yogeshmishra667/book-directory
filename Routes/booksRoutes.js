@@ -1,5 +1,6 @@
 const express = require('express');
 const bookController = require('../Controllers/bookController');
+const authController = require('../Controllers/authController');
 
 const Router = express.Router();
 // Router.param('id', bookController.checkID);
@@ -12,6 +13,7 @@ Router.route('/top-5-books').get(
   bookController.getAllBooks
 );
 Router.route('/top-5-author').get(
+  authController.protect, //protect route
   bookController.getTopFiveAuthor,
   bookController.getAllBooks
 );
