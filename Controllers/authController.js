@@ -15,6 +15,7 @@ exports.signup = catchAsync(async (req, res) => {
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
     passwordChangedAt: req.body.passwordChangedAt,
+    role: req.body.role,
   });
 
   //create token
@@ -93,3 +94,16 @@ exports.protect = catchAsync(async (req, res, next) => {
   req.user = freshUser; //we can access user data from req.user in any route which is protected
   next();
 });
+
+exports.restrictTo =
+  (...roles) =>
+  (req, res, next) => {
+    //roles ['admin']. role='user'
+    if (!roles.includes(req.user.role)) {
+      //if role is not admin then it will return true and go to next middleware else it will return false and go to error middleware and send error message
+      return next(
+        new AppError('You do not have permission to perform this action', 403)
+      );
+    }
+    next();
+  };

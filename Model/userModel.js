@@ -39,6 +39,11 @@ const userSchema = new mongoose.Schema({
     },
   },
   passwordChangedAt: Date, //we need to know when password changed
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
 });
 
 userSchema.pre('save', async function (next) {

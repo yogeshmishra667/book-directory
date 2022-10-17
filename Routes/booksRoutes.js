@@ -33,6 +33,10 @@ Router.route('/')
 Router.route('/:id')
   .get(bookController.getBooks)
   .patch(bookController.updateBooks)
-  .delete(bookController.deleteBooks);
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    bookController.deleteBooks
+  );
 
 module.exports = Router;
