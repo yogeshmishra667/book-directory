@@ -63,6 +63,16 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
+userSchema.pre('save', function (next) {
+  //we need to know when password changed
+  //we check if password is modified or it is new user then we return next()
+  if (!this.isModified('password') || this.isNew) return next();
+
+  //we need to set passwordChangedAt 1 second before the token was issued
+  this.passwordChangedAt = Date.now() - 1000;
+  next();
+});
+
 userSchema.methods.correctPassword = async function (
   candidatePassword,
   userPassword
