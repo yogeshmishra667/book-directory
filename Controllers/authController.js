@@ -28,8 +28,7 @@ exports.signup = catchAsync(async (req, res) => {
 
   //create token
   const token = signToken(newUser._id);
-
-  res.status(200).json({
+  res.status(201).json({
     status: 'success',
     token,
     data: {
@@ -55,7 +54,6 @@ exports.login = catchAsync(async (req, res, next) => {
 
   //3) if everything ok, send token to client
   const token = signToken(user._id);
-
   res.status(200).json({
     status: 'success',
     token,
@@ -183,6 +181,32 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
   //3) Update changedPasswordAt property for the user
 
   //4) Log the user in, send JWT
+  const token = signToken(user._id);
+  res.status(200).json({
+    status: 'success',
+    token,
+  });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  //1) Get user from collection
+  const user = await User.findById(req.user.id).select('+password');
+  //we are getting user from DB and also adding password field in data
+  //because we want to check if password is correct or not ⬇
+
+  //2) Check if POSTed current password is correct
+  //we are checking if password which we got from req.body is correct or not ⬇
+  //we are using correctPassword function which we created in userModel ⬇
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong.', 401));
+  }
+  //3) If so, update password
+  user.password = req.body.password;
+  user.confirmPassword = req.body.confirmPassword;
+  await user.save();
+  //User.findByIdAndUpdate will NOT work as intended!
+
+  //4) Log user in, send JWT
   const token = signToken(user._id);
   res.status(200).json({
     status: 'success',
