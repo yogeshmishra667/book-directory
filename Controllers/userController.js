@@ -42,6 +42,14 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, { active: false });
+
+  res.status(204).json({
+    status: 'success',
+  });
+});
+
 //User Route
 exports.getAllUsers = catchAsync(async (req, res) => {
   const user = await User.find();

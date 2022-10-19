@@ -47,6 +47,17 @@ const userSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user',
   },
+  active: {
+    type: Boolean,
+    default: true,
+    select: false, //we don't want to show active in response
+  },
+});
+
+userSchema.pre(/^find/, function (next) {
+  //this points to current query
+  this.find({ active: { $ne: false } }); //we don't want to show inactive users
+  next();
 });
 
 userSchema.pre('save', async function (next) {
