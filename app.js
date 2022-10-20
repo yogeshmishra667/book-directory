@@ -53,6 +53,7 @@ app.use(mongoSanitize()); //remove $ and . from req.body and req
 app.use(xss()); //clean user input from malicious HTML code and prevent XSS attack (cross site scripting) attack by removing all html tags from user input and replace it with html entities like < to < and > to > and so on and so forth.
 //prevent parameter pollution
 
+//prevent parameter pollution
 app.use(
   hpp({
     whitelist: [
@@ -62,6 +63,10 @@ app.use(
       'genre',
       'author',
       'price',
+      'publishedDate',
+      'format',
+      'pageCount',
+      'language',
     ],
     //whitelist is an array of fields that we want to allow to be duplicated in the query string
   })
