@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const globalErrorHandler = require('./Controllers/errorController');
 const booksRouter = require('./Routes/booksRoutes');
@@ -18,10 +19,20 @@ const corsOptions = {
 app.use(express.json());
 //express does not support body on the req so we use middleware
 app.use(express.static(`${__dirname}/public`));
-// 1.1) custom middleware
+
+// 1.1) custom middleware/ GLOBAL MIDDLEWARE
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
+
+const limiter = rateLimit({
+  max: 50,
+  windowMs: 60 * 60 * 1000,
+  message: 'Too many requests from this IP, please try again in an hour!',
+});
+app.use('/api', limiter);
+
 app.use(cors(corsOptions)); // Use this after the variable declaration
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', '*');
