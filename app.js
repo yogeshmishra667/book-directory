@@ -3,6 +3,10 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 const cors = require('cors');
 const helmet = require('helmet');
+const mongoSanitize = require('express-mongo-sanitize');
+const xss = require('xss-clean');
+const hpp = require('hpp');
+
 const globalErrorHandler = require('./Controllers/errorController');
 const booksRouter = require('./Routes/booksRoutes');
 const userRouter = require('./Routes/userRoutes');
@@ -42,6 +46,26 @@ app.use(express.json({ limit: '10kb' })); //set body limit 10kb
 //express does not support body on the req so we use middleware
 //serving static file
 app.use(express.static(`${__dirname}/public`));
+
+//data sanitization against NoSQL query injection
+app.use(mongoSanitize()); //remove $ and . from req.body and req
+
+app.use(xss()); //clean user input from malicious HTML code and prevent XSS attack (cross site scripting) attack by removing all html tags from user input and replace it with html entities like < to < and > to > and so on and so forth.
+//prevent parameter pollution
+
+app.use(
+  hpp({
+    whitelist: [
+      'publisher',
+      'ratingsQuantity',
+      'ratingsAverage',
+      'genre',
+      'author',
+      'price',
+    ],
+    //whitelist is an array of fields that we want to allow to be duplicated in the query string
+  })
+);
 
 //for handle CORS origin error
 app.use(cors(corsOptions)); // Use this after the variable declaration
