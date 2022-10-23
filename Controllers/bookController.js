@@ -1,7 +1,51 @@
+const multer = require('multer');
+const sharp = require('sharp');
 const Book = require('../Model/booksModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
+
+//FOR UPLOAD IMAGES
+//IF YOU DO NOT WANT TO CROP IMG THEN USE THESE WAY
+
+// const multerStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'public/img/users');
+//   },
+//   filename: (req, file, cb) => {
+//     const ext = file.mimetype.split('/')[1];
+//     cb(null, `user-${req.user.id}-${Date.now()}.${ext}`);
+//   }
+// });
+
+const multerStorage = multer.memoryStorage();
+
+const multerFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images.', 400), false);
+  }
+};
+
+const upload = multer({
+  storage: multerStorage,
+  fileFilter: multerFilter,
+});
+exports.uploadBookPhoto = upload.single('bookCover');
+
+//RESIZE AND COMPRESS IMAGES USING SHARP
+exports.resizeBookPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) return next();
+  req.file.filename = `book-${req.params.id}-${Date.now()}-cover.jpeg`;
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/books/${req.file.filename}`);
+
+  next();
+});
 
 //Additional features
 exports.getTopFive = (req, res, next) => {
@@ -30,9 +74,12 @@ exports.bestSeller = (req, res, next) => {
   next();
 };
 exports.searchBook = catchAsync(async (req, res) => {
-  const searchedField = req.query.title;
   const book = await Book.find({
-    title: { $regex: searchedField, $options: '$i' },
+    $or: [
+      { title: { $regex: /req.params.key/ }, $options: 'ix' },
+      { Author: { $regex: /req.params.key/ }, $options: 'ix' },
+      { publisher: { $regex: /req.params.key/ }, $options: 'ix' },
+    ],
   });
 
   res.status(201).send({
@@ -84,10 +131,15 @@ exports.getBooks = catchAsync(async (req, res, next) => {
 });
 
 exports.updateBooks = catchAsync(async (req, res, next) => {
-  const book = await Book.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const book = await Book.findByIdAndUpdate(
+    req.params.id,
+    // eslint-disable-next-line node/no-unsupported-features/es-syntax
+    { ...req.body, bookCover: req.file.filename },
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
   res.status(200).json({
     status: 'success',
     data: {

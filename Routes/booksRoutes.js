@@ -25,14 +25,24 @@ Router.route('/bestSeller').get(
   bookController.bestSeller,
   bookController.getAllBooks
 );
-Router.route('/searchBook').get(bookController.searchBook);
+Router.route('/searchBook/:key').get(bookController.searchBook);
 
 Router.route('/')
   .get(bookController.getAllBooks)
-  .post(bookController.createBooks);
+  .post(
+    authController.protect,
+    authController.restrictTo('admin', 'publisher'),
+    bookController.createBooks
+  );
 Router.route('/:id')
   .get(bookController.getBooks)
-  .patch(bookController.updateBooks)
+  .patch(
+    authController.protect,
+    authController.restrictTo('admin', 'publisher'),
+    bookController.uploadBookPhoto,
+    bookController.resizeBookPhoto,
+    bookController.updateBooks
+  )
   .delete(
     authController.protect,
     authController.restrictTo('admin'),

@@ -73,7 +73,7 @@ const bookSchema = new mongoose.Schema(
     },
     bookCover: {
       type: String,
-      required: [true, 'A books must have a cover image'],
+      default: 'default.jpg',
     },
     language: {
       type: String,
