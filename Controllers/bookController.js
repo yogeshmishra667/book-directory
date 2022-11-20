@@ -1,6 +1,8 @@
 const multer = require('multer');
 const sharp = require('sharp');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const Book = require('../Model/booksModel');
+// const User = require('../Model/userModel');
 const APIFeatures = require('../utils/apiFeatures');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
@@ -47,6 +49,38 @@ exports.resizeBookPhoto = catchAsync(async (req, res, next) => {
   next();
 });
 
+//payment and checkout
+exports.getCheckoutSession = catchAsync(async (req, res, next) => {
+  const book = await Book.findById(req.params.id);
+
+  const session = await stripe.checkout.sessions.create({
+    success_url: `${process.env.CLIENT_URL}/success`,
+    cancel_url: `${process.env.CLIENT_URL}/failed`,
+
+    //customer_email: req.user.email,
+    client_reference_id: req.params.id,
+    line_items: [
+      {
+        name: `${book.title}`,
+        description: book.summary,
+        images: [
+          `${req.protocol}://${req.get('host')}/img/tours/${book.imageCover}`,
+        ],
+        amount: book.price * 70,
+        currency: 'inr',
+        quantity: 1,
+      },
+    ],
+    mode: 'payment',
+  });
+
+  //3) Create session as response
+  res.status(200).json({
+    status: 'success',
+    url: session.url,
+  });
+});
+
 //Additional features
 exports.getTopFive = (req, res, next) => {
   req.query.limit = '5';
@@ -62,9 +96,9 @@ exports.getTopFiveAuthor = (req, res, next) => {
   next();
 };
 exports.getLatestBook = (req, res, next) => {
-  req.query.limit = '2';
+  req.query.limit = '3';
   req.query.sort = '-publishedDate';
-  req.query.fields = 'title,Author,publisher,publishedDate';
+
   next();
 };
 exports.bestSeller = (req, res, next) => {

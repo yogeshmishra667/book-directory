@@ -33,7 +33,7 @@ if (process.env.NODE_ENV === 'development') {
 
 //limit request from same API
 const limiter = rateLimit({
-  max: 50,
+  max: 500,
   windowMs: 60 * 60 * 1000,
   message: 'Too many requests from this IP, please try again in an hour!',
 });
@@ -41,6 +41,7 @@ const limiter = rateLimit({
 app.use('/api', limiter);
 
 //body-parser, reading data from the body into req.body
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json({ limit: '10kb' })); //set body limit 10kb
 
 //express does not support body on the req so we use middleware

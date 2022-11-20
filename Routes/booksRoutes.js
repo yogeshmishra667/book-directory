@@ -7,6 +7,11 @@ const Router = express.Router();
 
 //for aggregation pipeline
 Router.route('/book-stats').get(bookController.getBookStats);
+
+//payment
+Router.route('/create-checkout-session/:id').get(
+  bookController.getCheckoutSession
+);
 //aliasing
 Router.route('/top-5-books').get(
   bookController.getTopFive,
