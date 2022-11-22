@@ -76,6 +76,11 @@ exports.login = catchAsync(async (req, res, next) => {
   //3) if everything ok, send token to client
   createSendToken(user, 200, res);
 });
+
+exports.getUserData = catchAsync(async (req, res, next) => {
+    res.status(200).json({ data: req.user })
+});
+
 exports.protect = catchAsync(async (req, res, next) => {
   //1) getting token and check of it's there
   let token;
