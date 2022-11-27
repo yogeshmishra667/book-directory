@@ -15,7 +15,7 @@ const AppError = require('./utils/appError');
 const app = express();
 
 const corsOptions = {
-  origin: '*',
+  origin: 'http://localhost:3000',
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
@@ -75,14 +75,6 @@ app.use(
 
 //for handle CORS origin error
 app.use(cors(corsOptions)); // Use this after the variable declaration
-app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
-  res.header(
-    'Access-Control-Allow-Headers',
-    'Origin, X-Requested-With, Content-Type, Accept'
-  );
-  next();
-});
 
 //Test middleware
 app.use((req, res, next) => {
@@ -93,6 +85,7 @@ app.use((req, res, next) => {
 
 //2) ROUTES
 //always use mounting after the declare the variable ⬇️
+
 app.use('/api/v1/books', booksRouter);
 app.use('/api/v1/users', userRouter);
 
